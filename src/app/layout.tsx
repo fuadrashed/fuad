@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "فينفز بلانت - كاشف الأسهم الرخيصة قبل الانطلاق",
-  description: "فلتر أسهم أسطوري يكشف الأسهم الرخيصة في السوق الأمريكي قبل انطلاقها باستخدام تحليل فني متقدم.",
-  keywords: ["أسهم", "سوق أمريكي", "فينفز", "فلتر أسهم", "تحليل فني", "استثمار"],
+  title: "فيلتر تداول - كاشف الأسهم السعودية قبل الانطلاق",
+  description: "فلتر أسهم سعودي احترافي يكشف فرص التداول في سوق تداول باستخدام تحليل فني متقدم.",
+  keywords: ["أسهم سعودية", "تداول", "سوق تداول", "فلتر أسهم", "تحليل فني", "استثمار", "Tadawul"],
   icons: {
-    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>",
+    icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>",
   },
 };
 
@@ -33,7 +32,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         {children}
-        <Toaster />
       </body>
     </html>
   );

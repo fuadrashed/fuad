@@ -29,63 +29,62 @@ interface HistoryCandle {
   volume: number;
 }
 
-// Predefined universe of popular US stocks (cheap + growth candidates)
-const STOCK_UNIVERSE = [
-  // Big tech that might be cheap
-  "AAPL","MSFT","GOOG","AMZN","NVDA","META","TSLA","BRK-B","JPM","V",
-  "MA","HD","UNH","PG","JNJ","XOM","AVGO","LLY","CVX","MRK",
-  "ABBV","PEP","KO","COST","TMO","ADBE","CRM","CSCO","ACN","AMD",
-  "NFLX","CMCSA","INTC","ABT","COP","MCD","NKE","TXN","WMT","WFC",
-  "QCOM","BMY","HON","NEE","AMGN","LOW","UPS","LIN","PM","BA",
-  "DE","RTX","SPGI","IBM","CAT","CI","TJX","UNP","BKNG","CVS",
-  "GILD","MDLZ","CB","ADP","ISRG","SYK","MO","LRCX","VRTX","EQIX",
-  "BSX","PLD","REGN","FIS","MU","ZTS","CL","SNPS","DUK","SO",
-  "BDX","CME","BDX","USB","SHW","ITW","APD","EI","ICE","PGR",
-  // Cheaper stocks under $10
-  "ABEV","BBD","ITUB","NOK","HLN","MFG","LYG","BSBR","PFE","VZ",
-  "T","SIRI","INTC","AAL","BAC","WBA","C","NCLH","PLTR","SNAP",
-  "UWMC","F","GM","RIVN","LCID","NIO","MARA","SLB","PARA","WBD",
-  "KO","DIS","UBER","LYFT","SHOP","SQ","RBLX","CRWD","PATH","AI",
-  "SOFI","HOOD","AFRM","RPLA","UPST","LC","OPCH","BMBL","FUBO","VRM",
-  "XPEV","LI","BERY","AVD","CCJ","CDE","CMP","CX","EIGO","EU",
-  "EXEL","FSTR","GOLD","GTE","HBM","HL","HMY","IGC","IO","JAGGF",
-  "KGC","MOS","MUX","NEM","NG","NUGT","NYMT","OG","PAAS","PT",
-  "SAN","SBS","SLV","SVM","TAHO","TECK","TGD","TM","TPST","TRQ",
-  "USAP","UXIN","VEEV","WPM","X","ZIM","AG","AEM","AMR","ARCH",
-  "ATCO","BHP","BKR","CEIX","CHNR","CLF","CWH","DNN","EADSY","EMR",
-  "FMS","FMC","FWONK","GGB","GFI","GLO","GRA","GWRE","HES","HLNE",
-  "HUM","IR","J","JELD","KOP","LUMN","MRO","MT","NUE","OEC",
-  "OSK","PGNY","PVG","RRD","SAND","SBSW","SIX","SJR","SLB","SMFG",
-  "STAG","SU","SVM","TEVA","TFC","TK","TRGP","TRMD","TSEM","TX",
-  "UMC","UWMC","VAL","VALE","VICI","VST","WDS","WLK","WPM","XOM",
-  // More cheap growth stocks
-  "ASTS","AUY","BIRK","BITF","BRFS","BTG","CASY","CEG","CHGG","CRBP",
-  "CVNA","DK","DNUT","ENVX","EVGO","EXC","FREV","FIX","FTNT","GEHC",
-  "GFS","GL","GM","GRAB","GSM","HLNE","HIMS","HNI","IGIC","INMD",
-  "INVH","IRDM","JAMF","JMIA","JXN","KDP","KINS","KN","LCII","LECO",
-  "MNST","MRNA","MSTR","MUI","NMRD","NRDS","NXST","OCFC","ON","OTEX",
-  "PCGS","PINS","PRGS","PRO","PYPL","QRTEA","RCMT","RDVT","RIG","RNW",
-  "RVP","RXST","SAVA","SBLK","SCU","SE","SEAS","SITC","SMCI","SNGX",
-  "SOFI","SQNS","SSTK","STR","SUN","SUPN","TAL","TCOM","TGI","TLRY",
-  "TNET","TR","TRMB","TSE","TTD","TTE","TWLO","TXN","UCBI","UCPT",
-  "UHAL","UNTY","UPOW","USAC","USPH","VBTX","VIAV","VIR","VNT",
-  "VOXX","VRT","VTRS","WB","WDC","WERN","WH","WIRE","WPC","WW",
-  "XCUR","XERS","XM","XPEL","YMM","ZA","ZETA","ZIMV","ZNTL"
+// Comprehensive list of Saudi Stock Market (Tadawul) tickers
+export const SAUDI_STOCK_UNIVERSE = [
+  // Major Banks
+  "1120.SR","1150.SR","1180.SR","1060.SR","1020.SR","1010.SR","1110.SR","1140.SR",
+  "1160.SR","1190.SR","1210.SR","1220.SR","1230.SR","1240.SR","1030.SR","1050.SR",
+  "1070.SR","1080.SR","1090.SR","1130.SR",
+  // Petrochemicals & Basic Materials
+  "2010.SR","2002.SR","2008.SR","2310.SR","2330.SR","2380.SR","2050.SR","2060.SR",
+  "2080.SR","2090.SR","2300.SR","2305.SR","2315.SR","2320.SR","2325.SR","2340.SR",
+  "2360.SR","2370.SR",
+  // Energy
+  "2222.SR","2240.SR",
+  // Insurance
+  "8010.SR","8020.SR","8030.SR","8050.SR","8060.SR","8070.SR","8080.SR","8011.SR",
+  "8025.SR","8035.SR","8055.SR","8065.SR","8075.SR","8085.SR","8090.SR","8190.SR",
+  // Real Estate
+  "4220.SR","4230.SR","4240.SR","4250.SR","4260.SR","4270.SR","4280.SR","4290.SR",
+  "4210.SR",
+  // Healthcare & Pharma
+  "4211.SR",
+  // Food & Retail
+  "6004.SR","6010.SR","6020.SR","6030.SR","6040.SR","6050.SR","6060.SR","6070.SR",
+  "6080.SR",
+  // Telecom
+  "7010.SR","7020.SR",
+  // Transport
+  "3020.SR","3030.SR","3040.SR","3050.SR","3060.SR","3070.SR","3080.SR","3090.SR",
+  "3010.SR",
+  // Utilities & Cement
+  "4010.SR","4020.SR","4030.SR","4040.SR","4050.SR",
+  // Technology & Services
+  "1810.SR","1820.SR","1830.SR","1840.SR","1850.SR","1860.SR",
+  // Investment & Financial Services
+  "1100.SR","1101.SR","1102.SR","4060.SR","4070.SR","4080.SR","4090.SR",
+  "4001.SR","4002.SR","4003.SR","4004.SR",
+  // Additional stocks
+  "3011.SR","3012.SR","3013.SR","3014.SR","3021.SR","3030.SR","3041.SR",
+  "4005.SR","4006.SR","4007.SR","4008.SR","4009.SR","4011.SR","4012.SR",
+  "4013.SR","4014.SR","4015.SR",
+  "4231.SR","4241.SR","4242.SR","4243.SR","4244.SR","4245.SR",
+  "5010.SR","5020.SR","5030.SR","5040.SR","5050.SR","5060.SR","5070.SR",
+  "5080.SR","5090.SR","5011.SR","5012.SR",
+  "5200.SR","5210.SR","5220.SR","5230.SR","5240.SR","5250.SR","5260.SR",
+  "5270.SR","5280.SR","5290.SR",
+  "4330.SR","4340.SR","4350.SR","4360.SR","4370.SR","4380.SR","4390.SR",
+  "4300.SR","4301.SR","4302.SR","4303.SR","4304.SR","4305.SR",
+  "1870.SR","1880.SR","1890.SR",
+  "4200.SR","4201.SR","4202.SR","4203.SR","4204.SR","4205.SR","4206.SR",
+  "4207.SR","4208.SR","4209.SR","4212.SR","4213.SR","4214.SR","4215.SR",
+  "7030.SR","7040.SR","7050.SR","7060.SR","7070.SR","7080.SR","7090.SR",
+  "4310.SR","4311.SR","4312.SR","4313.SR","4314.SR","4315.SR","4316.SR",
+  "4317.SR","4318.SR","4319.SR",
 ];
 
-interface TickerData {
-  symbol: string;
-  name: string;
-  lastsale: string;
-  netchange: string;
-  pctchange: string;
-  marketCap: string;
-}
-
-export async function getAllTickers(_page = 1, _type = "STOCKS"): Promise<TickerData[]> {
-  // Not used anymore - we use the predefined universe
-  return [];
-}
+// Remove duplicates while preserving order
+const uniqueTickers = [...new Set(SAUDI_STOCK_UNIVERSE)];
 
 export async function getBatchQuotes(tickers: string[]): Promise<Record<string, QuoteData>> {
   if (tickers.length === 0) return {};
@@ -99,7 +98,7 @@ export async function getBatchQuotes(tickers: string[]): Promise<Record<string, 
 
   for (const batch of batches) {
     try {
-      const quotes = await yf.quote(batch.map(s => s.replace("-", "-")));
+      const quotes = await yf.quote(batch);
       const arr = Array.isArray(quotes) ? quotes : [quotes];
       for (const q of arr) {
         if (q && q.symbol) {
@@ -109,7 +108,7 @@ export async function getBatchQuotes(tickers: string[]): Promise<Record<string, 
     } catch (err) {
       console.warn("Batch quote error:", err);
     }
-    // Small delay between batches
+    // Small delay between batches to avoid rate limiting
     await new Promise(r => setTimeout(r, 300));
   }
 
@@ -122,15 +121,8 @@ export async function getStockHistory(
   limit = 60
 ): Promise<HistoryCandle[]> {
   try {
-    const rangeMap: Record<string, string> = {
-      "1d": limit <= 7 ? "5d" : limit <= 30 ? "1mo" : "3mo",
-      "1wk": "6mo",
-      "1mo": "1y",
-    };
-    const range = rangeMap[interval] || "3mo";
-
     const result = await yf.chart(symbol, {
-      period1: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+      period1: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
       interval: "1d" as const,
     });
 
@@ -152,28 +144,11 @@ export async function getStockHistory(
   }
 }
 
-export function filterStocks(
-  tickers: TickerData[],
-  maxPrice: number = 50,
-  minMarketCap: number = 500_000_000,
-  minPrice: number = 0.10
-): TickerData[] {
-  return tickers.filter((t) => {
-    if (t.symbol.includes("^")) return false;
-    if (t.symbol.includes(".W")) return false;
-    const price = parseFloat(t.lastsale.replace(/[$,]/g, "")) || 0;
-    if (price < minPrice || price > maxPrice) return false;
-    const mcap = parseFloat((t.marketCap || "0").replace(/[$,]/g, "")) || 0;
-    return mcap >= minMarketCap;
-  });
-}
-
-// Filter universe by price using quotes
 export function filterUniverse(
   quotes: Record<string, QuoteData>,
-  maxPrice: number = 10,
-  minMarketCap: number = 500_000_000,
-  minPrice: number = 0.10
+  maxPrice: number = 500,
+  minMarketCap: number = 100_000_000,
+  minPrice: number = 1
 ): QuoteData[] {
   return Object.values(quotes).filter((q) => {
     const price = q.regularMarketPrice || 0;
@@ -182,7 +157,7 @@ export function filterUniverse(
   });
 }
 
-export { STOCK_UNIVERSE };
+export { uniqueTickers as SAUDI_STOCK_UNIVERSE_DEDUPED };
 
 export interface StockAnalysis {
   symbol: string;
@@ -365,66 +340,71 @@ export function analyzeStock(
   const riskRewardRatio = riskDist > 0 ? (target1 - price) / riskDist : 0;
   const expectedReturn = price > 0 ? ((target1 - price) / price) * 100 : 0;
 
-  let holdingPeriod = "3-5 \u0623\u064A\u0627\u0645";
-  if (expectedReturn > 30) holdingPeriod = "2-4 \u0623\u0633\u0627\u0628\u064A\u0639";
-  else if (expectedReturn > 15) holdingPeriod = "1-3 \u0623\u0633\u0627\u0628\u064A\u0639";
-  else if (expectedReturn > 8) holdingPeriod = "1-2 \u0623\u0633\u0628\u0648\u0639";
+  let holdingPeriod = "3-5 أيام";
+  if (expectedReturn > 30) holdingPeriod = "2-4 أسابيع";
+  else if (expectedReturn > 15) holdingPeriod = "1-3 أسابيع";
+  else if (expectedReturn > 8) holdingPeriod = "1-2 أسبوع";
 
   let score = 0;
   const signals: string[] = [];
 
-  if (rsi < 30) { score += 20; signals.push("RSI \u062A\u0634\u0628\u0639 \u0628\u064A\u0639\u064A"); }
-  else if (rsi < 40) { score += 18; signals.push("RSI \u0645\u0646\u062E\u0641\u0636"); }
-  else if (rsi < 50) { score += 14; signals.push("RSI \u0645\u062D\u0627\u064A\u062F"); }
+  // RSI Scoring
+  if (rsi < 30) { score += 20; signals.push("RSI تشبع بيعي"); }
+  else if (rsi < 40) { score += 18; signals.push("RSI منخفض"); }
+  else if (rsi < 50) { score += 14; signals.push("RSI محايد"); }
   else if (rsi < 60) { score += 10; }
   else if (rsi < 70) { score += 5; }
-  else if (rsi > 75) { score -= 5; signals.push("RSI \u062A\u0634\u0628\u0639 \u0634\u0631\u0627\u0626\u064A"); }
+  else if (rsi > 75) { score -= 5; signals.push("RSI تشبع شرائي"); }
 
-  if (volumeRatio > 3) { score += 18; signals.push("\u062D\u062C\u0645 \u062A\u062F\u0627\u0648\u0644 \u0645\u0631\u062A\u0641\u0639 \u062C\u062F\u0627"); }
-  else if (volumeRatio > 2) { score += 14; signals.push("\u0627\u0631\u062A\u0641\u0627\u0639 \u0645\u0644\u062D\u0648\u0638 \u0641\u064A \u0627\u0644\u062D\u062C\u0645"); }
-  else if (volumeRatio > 1.5) { score += 10; signals.push("\u062D\u062C\u0645 \u0623\u0639\u0644\u0649 \u0645\u0646 \u0627\u0644\u0645\u062A\u0648\u0633\u0637"); }
+  // Volume Scoring
+  if (volumeRatio > 3) { score += 18; signals.push("حجم تداول مرتفع جداً"); }
+  else if (volumeRatio > 2) { score += 14; signals.push("ارتفاع ملحوظ في الحجم"); }
+  else if (volumeRatio > 1.5) { score += 10; signals.push("حجم أعلى من المتوسط"); }
   else if (volumeRatio > 1.0) { score += 5; }
 
-  if (goldenCross) { score += 15; signals.push("\u062A\u0642\u0627\u0637\u0639 \u0630\u0647\u0628\u064A SMA50/200"); }
-  else if (sma50 > sma200) { score += 10; signals.push("\u0627\u062A\u062C\u0627\u0647 \u0635\u0627\u0639\u062F"); }
-  else if (deathCross) { score -= 10; signals.push("\u062A\u0642\u0627\u0637\u0639 \u0627\u0644\u0645\u0648\u062A SMA50/200"); }
+  // Moving Average Scoring
+  if (goldenCross) { score += 15; signals.push("تقاطع ذهبي SMA50/200"); }
+  else if (sma50 > sma200) { score += 10; signals.push("اتجاه صاعد"); }
+  else if (deathCross) { score -= 10; signals.push("تقاطع الموت SMA50/200"); }
 
   if (price > sma20) { score += 10; }
   else if (price > sma50) { score += 5; }
 
-  if (price <= bb.lower) { score += 15; signals.push("\u0627\u0644\u0633\u0639\u0631 \u0639\u0646\u062F \u0627\u0644\u062D\u062F \u0627\u0644\u0633\u0641\u0644\u064A \u0644\u0628\u0648\u0644\u0646\u062C\u0631"); }
-  else if (price <= bb.lower * 1.02) { score += 12; signals.push("\u0642\u0631\u0628 \u0627\u0644\u062D\u062F \u0627\u0644\u0633\u0641\u0644\u064A \u0644\u0628\u0648\u0644\u0646\u062C\u0631"); }
-  else if (bollingerSqueeze) { score += 10; signals.push("\u0627\u0646\u0636\u063A\u0627\u0637 \u0628\u0648\u0644\u0646\u062C\u0631"); }
+  // Bollinger Scoring
+  if (price <= bb.lower) { score += 15; signals.push("السعر عند الحد السفلي لبولنجر"); }
+  else if (price <= bb.lower * 1.02) { score += 12; signals.push("قرب الحد السفلي لبولنجر"); }
+  else if (bollingerSqueeze) { score += 10; signals.push("انضغاط بولنجر"); }
 
-  if (macdBullish) { score += 10; signals.push("MACD \u0625\u064A\u062C\u0627\u0628\u064A"); }
+  // MACD Scoring
+  if (macdBullish) { score += 10; signals.push("MACD إيجابي"); }
   else if (macd.histogram > 0) { score += 5; }
 
-  if (nearSupport && !oversold) { score += 10; signals.push("\u0642\u0631\u0628 \u0645\u0633\u062A\u0648\u0649 \u062F\u0639\u0645 \u0642\u0648\u064A"); }
+  // Support/Resistance
+  if (nearSupport && !oversold) { score += 10; signals.push("قرب مستوى دعم قوي"); }
   else if (price < sma200 && sma200 > 0) { score += 5; }
 
-  if (consolidating) { score += 10; signals.push("\u062A\u0630\u0628\u0630\u0628 \u0636\u064A\u0642 (\u062C\u0627\u0647\u0632 \u0644\u0644\u0627\u0646\u0637\u0644\u0627\u0642)"); }
-  if (breakoutUp) { score += 10; signals.push("\u0643\u0633\u0631 \u0645\u0642\u0627\u0648\u0645\u0629 \u0628\u062D\u062C\u0645 \u0645\u0631\u062A\u0641\u0639"); }
+  // Pattern Scoring
+  if (consolidating) { score += 10; signals.push("تذبذب ضيق (جاهز للانطلاق)"); }
+  if (breakoutUp) { score += 10; signals.push("كسر مقاومة بحجم مرتفع"); }
 
-  if (changePercent > 3 && volumeRatio > 1.5) { score += 10; signals.push("\u0632\u062E\u0645 \u0642\u0648\u064A"); }
-  else if (changePercent > 1.5 && volumeRatio > 1.0) { score += 6; signals.push("\u0632\u062E\u0645 \u0645\u062A\u0648\u0633\u0637"); }
+  // Momentum
+  if (changePercent > 3 && volumeRatio > 1.5) { score += 10; signals.push("زخم قوي"); }
+  else if (changePercent > 1.5 && volumeRatio > 1.0) { score += 6; signals.push("زخم متوسط"); }
   else if (changePercent > 0.5) { score += 3; }
 
-  if (pctFromHigh > 40) { score += 12; signals.push("\u062E\u0635\u0645 \u0643\u0628\u064A\u0631 \u0645\u0646 \u0623\u0639\u0644\u0649 52 \u0623\u0633\u0628\u0648\u0639"); }
-  else if (pctFromHigh > 25) { score += 9; signals.push("\u062E\u0635\u0645 \u0645\u0639\u062A\u062F\u0644"); }
+  // 52-week discount
+  if (pctFromHigh > 40) { score += 12; signals.push("خصم كبير من أعلى 52 أسبوع"); }
+  else if (pctFromHigh > 25) { score += 9; signals.push("خصم معتدل"); }
   else if (pctFromHigh > 15) { score += 5; }
   else if (pctFromHigh > 5) { score += 2; }
 
-  // Cheap stock bonus
-  if (price < 3) { score += 8; signals.push("\u0633\u0639\u0631 \u0631\u062E\u064A\u0635 \u062C\u062F\u0627 (<$3)"); }
-  else if (price < 5) { score += 5; signals.push("\u0633\u0639\u0631 \u0645\u0646\u062E\u0641\u0636 (<$5)"); }
-  else if (price < 10) { score += 3; }
-
-  let rating = "\u0645\u062A\u0627\u0628\u0639\u0629";
-  if (score >= 70) rating = "\u0630\u0647\u0628\u064A";
-  else if (score >= 55) rating = "\u0648\u0627\u0639\u062F";
-  else if (score >= 40) rating = "\u0645\u062A\u0627\u0628\u0639\u0629";
-  else if (score >= 25) rating = "\u0645\u062D\u0627\u064A\u062F";
-  else rating = "\u0628\u064A\u0639";
+  // Rating
+  let rating = "متابعة";
+  if (score >= 70) rating = "ذهبي";
+  else if (score >= 55) rating = "واعد";
+  else if (score >= 40) rating = "متابعة";
+  else if (score >= 25) rating = "محايد";
+  else rating = "بيع";
 
   score = Math.max(0, Math.min(100, score));
 

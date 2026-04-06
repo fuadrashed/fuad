@@ -4,16 +4,15 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp, TrendingDown, Zap, BarChart3, Activity, Target, ArrowUpDown,
-  RefreshCw, ChevronDown, ChevronUp, Eye, Flame, Shield, ArrowRight, Filter,
-  Loader2, AlertTriangle, CheckCircle2, Volume2, DollarSign, Search, Star,
-  Crosshair, Clock, Percent, AlertCircle, BarChart2, LineChart
+  RefreshCw, Eye, Flame, Shield, Filter,
+  Loader2, AlertTriangle, CheckCircle2, Volume2, Search, Star,
+  Crosshair, Clock, Percent, AlertCircle, BarChart2, LineChart, DollarSign
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
@@ -46,19 +45,23 @@ function formatNum(n: number): string {
   return n.toFixed(0);
 }
 
+function formatSAR(n: number): string {
+  return n.toFixed(2);
+}
+
 function getRatingColor(r: string) {
-  if (r === "\u0630\u0647\u0628\u064A") return "text-amber-700 bg-amber-50 border-amber-200";
-  if (r === "\u0648\u0627\u0639\u062F") return "text-emerald-700 bg-emerald-50 border-emerald-200";
-  if (r === "\u0645\u062A\u0627\u0628\u0639\u0629") return "text-blue-700 bg-blue-50 border-blue-200";
-  if (r === "\u0645\u062D\u0627\u064A\u062F") return "text-yellow-700 bg-yellow-50 border-yellow-200";
+  if (r === "ذهبي") return "text-amber-700 bg-amber-50 border-amber-200";
+  if (r === "واعد") return "text-emerald-700 bg-emerald-50 border-emerald-200";
+  if (r === "متابعة") return "text-blue-700 bg-blue-50 border-blue-200";
+  if (r === "محايد") return "text-yellow-700 bg-yellow-50 border-yellow-200";
   return "text-red-700 bg-red-50 border-red-200";
 }
 
 function getRatingEmoji(r: string) {
-  if (r === "\u0630\u0647\u0628\u064A") return "\uD83D\uDFE9";
-  if (r === "\u0648\u0627\u0639\u062F") return "\uD83D\uDFE2";
-  if (r === "\u0645\u062A\u0627\u0628\u0639\u0629") return "\uD83D\uDD35";
-  if (r === "\u0645\u062D\u0627\u064A\u062F") return "\uD83D\uDFE1";
+  if (r === "ذهبي") return "\uD83D\uDFE9";
+  if (r === "واعد") return "\uD83D\uDFE2";
+  if (r === "متابعة") return "\uD83D\uDD35";
+  if (r === "محايد") return "\uD83D\uDFE1";
   return "\uD83D\uDD34";
 }
 
@@ -145,11 +148,10 @@ function DetailChart({ stock }: { stock: StockAnalysis }) {
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
         <XAxis dataKey="date" tick={{ fill: "#94a3b8", fontSize: 10 }} interval="preserveStartEnd" />
         <YAxis yAxisId="price" tick={{ fill: "#94a3b8", fontSize: 10 }} domain={["auto", "auto"]} />
-        <YAxis yAxisId="vol" orientation="right" tick={{ fill: "#94a3b8", fontSize: 10 }} domain={[0, "auto"]} hide />
+        <YAxis yAxisId="vol" orientation="left" tick={{ fill: "#94a3b8", fontSize: 10 }} domain={[0, "auto"]} hide />
         <RechartsTooltip contentStyle={{ backgroundColor: "#ffffff", border: "1px solid #e2e8f0", borderRadius: "10px", color: "#1e293b", fontSize: 12, boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07)" }} />
-        {/* Reference lines for key levels */}
-        <ReferenceLine yAxisId="price" y={stock.sma50} stroke="#3b82f6" strokeDasharray="5 5" label={{ value: "SMA50", fill: "#3b82f6", fontSize: 9, position: "insideTopRight" }} />
-        <ReferenceLine yAxisId="price" y={stock.sma200} stroke="#8b5cf6" strokeDasharray="5 5" label={{ value: "SMA200", fill: "#8b5cf6", fontSize: 9, position: "insideTopRight" }} />
+        <ReferenceLine yAxisId="price" y={stock.sma50} stroke="#3b82f6" strokeDasharray="5 5" label={{ value: "SMA50", fill: "#3b82f6", fontSize: 9, position: "insideTopLeft" }} />
+        <ReferenceLine yAxisId="price" y={stock.sma200} stroke="#8b5cf6" strokeDasharray="5 5" label={{ value: "SMA200", fill: "#8b5cf6", fontSize: 9, position: "insideTopLeft" }} />
         <ReferenceLine yAxisId="price" y={stock.buyRangeLow} stroke="#059669" strokeDasharray="3 3" />
         <ReferenceLine yAxisId="price" y={stock.stopLoss} stroke="#dc2626" strokeDasharray="3 3" label={{ value: "SL", fill: "#dc2626", fontSize: 9 }} />
         <ReferenceLine yAxisId="price" y={stock.target1} stroke="#d97706" strokeDasharray="3 3" label={{ value: "T1", fill: "#d97706", fontSize: 9 }} />
@@ -160,7 +162,7 @@ function DetailChart({ stock }: { stock: StockAnalysis }) {
   );
 }
 
-export default function StockScreener() {
+export default function SaudiStockScreener() {
   const [data, setData] = useState<{ stocks: StockAnalysis[]; total: number; scanned: number; analyzed: number; timestamp: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -168,8 +170,8 @@ export default function StockScreener() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sortBy, setSortBy] = useState<"score" | "price" | "change" | "return" | "rr">("score");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [maxPrice, setMaxPrice] = useState(10);
-  const [minMarketCap, setMinMarketCap] = useState(500_000_000);
+  const [maxPrice, setMaxPrice] = useState(500);
+  const [minMarketCap, setMinMarketCap] = useState(100_000_000);
   const [minScore, setMinScore] = useState(20);
   const [ratingFilter, setRatingFilter] = useState("all");
   const [activeTab, setActiveTab] = useState("golden");
@@ -188,9 +190,9 @@ export default function StockScreener() {
           minScore: minScore.toString(),
           rating: ratingFilter,
           limit: "80",
-          minPrice: "0.10",
+          minPrice: "1",
         });
-        const res = await fetch(`/api/stocks/cheap?${params}`);
+        const res = await fetch(`/api/stocks?${params}`);
         const json = await res.json();
         if (!cancelled) {
           if (json.error) setError(json.error);
@@ -203,7 +205,7 @@ export default function StockScreener() {
     }
 
     load();
-    intervalId = setInterval(load, 5 * 60 * 1000);
+    intervalId = setInterval(load, 10 * 60 * 1000);
     return () => { cancelled = true; if (intervalId) clearInterval(intervalId); };
   }, [maxPrice, minMarketCap, minScore, ratingFilter]);
 
@@ -224,12 +226,34 @@ export default function StockScreener() {
     }
   }) : [];
 
-  const golden = sorted.filter(s => s.rating === "\u0630\u0647\u0628\u064A");
-  const promising = sorted.filter(s => s.rating === "\u0648\u0627\u0639\u062F");
-  const watchlist = sorted.filter(s => s.rating === "\u0645\u062A\u0627\u0628\u0639\u0629");
-  const neutral = sorted.filter(s => s.rating === "\u0645\u062D\u0627\u064A\u062F" || s.rating === "\u0628\u064A\u0639");
+  const golden = sorted.filter(s => s.rating === "ذهبي");
+  const promising = sorted.filter(s => s.rating === "واعد");
+  const watchlist = sorted.filter(s => s.rating === "متابعة");
+  const neutral = sorted.filter(s => s.rating === "محايد" || s.rating === "بيع");
 
   const displayStocks = activeTab === "golden" ? golden : activeTab === "promising" ? promising : activeTab === "watchlist" ? watchlist : neutral;
+
+  const refresh = () => {
+    setData(null);
+    setLoading(true);
+    setError(null);
+    const params = new URLSearchParams({
+      maxPrice: maxPrice.toString(),
+      minMarketCap: minMarketCap.toString(),
+      minScore: minScore.toString(),
+      rating: ratingFilter,
+      limit: "80",
+      minPrice: "1",
+    });
+    fetch(`/api/stocks?${params}`).then(r => r.json()).then(d => {
+      if (d.error) setError(d.error);
+      else setData(d);
+      setLoading(false);
+    }).catch(() => {
+      setError("فشل في الاتصال");
+      setLoading(false);
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900">
@@ -248,16 +272,12 @@ export default function StockScreener() {
                 <BarChart3 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-900">فينفز بلانت <span className="text-xs font-normal text-emerald-600 ml-1">PRO</span></h1>
-                <p className="text-[10px] text-slate-400">كاشف الأسهم الرخيصة | تحليل فني احترافي | NYSE & NASDAQ</p>
+                <h1 className="text-lg font-bold text-slate-900">فيلتر تداول <span className="text-xs font-normal text-emerald-600 mr-1">PRO</span></h1>
+                <p className="text-[10px] text-slate-400">كاشف الأسهم السعودية | تحليل فني احترافي | سوق تداول</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => {
-                setData(null);
-                const params = new URLSearchParams({ maxPrice: maxPrice.toString(), minMarketCap: minMarketCap.toString(), minScore: minScore.toString(), rating: ratingFilter, limit: "80", minPrice: "0.10" });
-                fetch(`/api/stocks/cheap?${params}`).then(r => r.json()).then(d => setData(d)).catch(() => setError("فشل"));
-              }} disabled={loading} className="text-xs border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50">
+              <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="text-xs border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50">
                 {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3 ml-1" />}
                 تحديث
               </Button>
@@ -295,15 +315,15 @@ export default function StockScreener() {
             <div className="flex items-center gap-2 mb-3">
               <Filter className="h-4 w-4 text-slate-400" />
               <span className="text-sm font-semibold text-slate-700">فلاتر متقدمة</span>
-              <span className="text-[10px] text-slate-400 mr-auto">منهجية Naranj Capital | تحليل فني احترافي</span>
+              <span className="text-[10px] text-slate-400 mr-auto">تحليل فني احترافي | سوق تداول السعودي</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="space-y-1.5">
                 <div className="flex justify-between">
-                  <label className="text-[11px] text-slate-400"><DollarSign className="h-3 w-3 inline" /> أقصى سعر</label>
-                  <span className="text-xs font-bold text-emerald-600">${maxPrice}</span>
+                  <label className="text-[11px] text-slate-400"><DollarSign className="h-3 w-3 inline" /> أقصى سعر (ر.س)</label>
+                  <span className="text-xs font-bold text-emerald-600">{maxPrice} ر.س</span>
                 </div>
-                <Slider value={[maxPrice]} onValueChange={([v]) => setMaxPrice(v)} min={1} max={100} step={1} />
+                <Slider value={[maxPrice]} onValueChange={([v]) => setMaxPrice(v)} min={10} max={1000} step={10} />
               </div>
               <div className="space-y-1.5">
                 <div className="flex justify-between">
@@ -313,11 +333,11 @@ export default function StockScreener() {
                 <Select value={minMarketCap.toString()} onValueChange={v => setMinMarketCap(Number(v))}>
                   <SelectTrigger className="bg-slate-50 border-slate-200 text-xs h-8 text-slate-700"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="50000000">$50M (Small+)</SelectItem>
-                    <SelectItem value="100000000">$100M</SelectItem>
-                    <SelectItem value="500000000">$500M (Mid+)</SelectItem>
-                    <SelectItem value="1000000000">$1B (Large)</SelectItem>
-                    <SelectItem value="5000000000">$5B</SelectItem>
+                    <SelectItem value="50000000">50M ر.س</SelectItem>
+                    <SelectItem value="100000000">100M ر.س</SelectItem>
+                    <SelectItem value="500000000">500M ر.س</SelectItem>
+                    <SelectItem value="1000000000">1B ر.س</SelectItem>
+                    <SelectItem value="5000000000">5B ر.س</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -333,9 +353,9 @@ export default function StockScreener() {
                 <Select value={ratingFilter} onValueChange={setRatingFilter}>
                   <SelectTrigger className="bg-slate-50 border-slate-200 text-xs h-8 text-slate-700"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">\u0627\u0644\u0643\u0644</SelectItem>
-                    <SelectItem value="promising">\u0648\u0627\u0639\u062F + \u0630\u0647\u0628\u064A</SelectItem>
-                    <SelectItem value="golden">\u0630\u0647\u0628\u064A \u0641\u0642\u0637</SelectItem>
+                    <SelectItem value="all">الكل</SelectItem>
+                    <SelectItem value="promising">واعد + ذهبي</SelectItem>
+                    <SelectItem value="golden">ذهبي فقط</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -369,8 +389,8 @@ export default function StockScreener() {
               <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}>
                 <BarChart3 className="h-14 w-14 text-emerald-500" />
               </motion.div>
-              <p className="text-slate-500 mt-4 text-sm">جارٍ تحليل السوق الأمريكي...</p>
-              <p className="text-slate-400 mt-1 text-xs">فحص وتحليل آلاف الأسهم بمنهجية احترافية</p>
+              <p className="text-slate-500 mt-4 text-sm">جارٍ تحليل سوق تداول السعودي...</p>
+              <p className="text-slate-400 mt-1 text-xs">فحص وتحليل الأسهم السعودية بمنهجية احترافية</p>
             </div>
           )}
 
@@ -379,10 +399,10 @@ export default function StockScreener() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="bg-slate-100 border border-slate-200 mb-4 w-full flex h-auto p-1">
                 {[
-                  { key: "golden", label: "\u0630\u0647\u0628\u064A", count: golden.length, icon: Flame, color: "text-amber-600" },
-                  { key: "promising", label: "\u0648\u0627\u0639\u062F", count: promising.length, icon: CheckCircle2, color: "text-emerald-600" },
-                  { key: "watchlist", label: "\u0645\u062A\u0627\u0628\u0639\u0629", count: watchlist.length, icon: Eye, color: "text-blue-600" },
-                  { key: "neutral", label: "\u0645\u062D\u0627\u064A\u062F", count: neutral.length, icon: AlertTriangle, color: "text-yellow-600" },
+                  { key: "golden", label: "ذهبي", count: golden.length, icon: Flame, color: "text-amber-600" },
+                  { key: "promising", label: "واعد", count: promising.length, icon: CheckCircle2, color: "text-emerald-600" },
+                  { key: "watchlist", label: "متابعة", count: watchlist.length, icon: Eye, color: "text-blue-600" },
+                  { key: "neutral", label: "محايد", count: neutral.length, icon: AlertTriangle, color: "text-yellow-600" },
                 ].map(tab => (
                   <TabsTrigger key={tab.key} value={tab.key} className="flex-1 gap-1.5 text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-slate-900 text-slate-500 py-2 rounded-lg transition-all">
                     <tab.icon className={`h-3 w-3 ${tab.color}`} />
@@ -405,9 +425,9 @@ export default function StockScreener() {
                         >
                           <Card
                             className={`cursor-pointer border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
-                              stock.rating === "\u0630\u0647\u0628\u064A" ? "bg-gradient-to-br from-amber-50/80 to-white border-amber-200/60 shadow-amber-100/50 shadow-sm" :
-                              stock.rating === "\u0648\u0627\u0639\u062F" ? "bg-gradient-to-br from-emerald-50/80 to-white border-emerald-200/60 shadow-emerald-100/50 shadow-sm" :
-                              stock.rating === "\u0645\u062A\u0627\u0628\u0639\u0629" ? "bg-gradient-to-br from-blue-50/80 to-white border-blue-200/60 shadow-blue-100/50 shadow-sm" :
+                              stock.rating === "ذهبي" ? "bg-gradient-to-br from-amber-50/80 to-white border-amber-200/60 shadow-amber-100/50 shadow-sm" :
+                              stock.rating === "واعد" ? "bg-gradient-to-br from-emerald-50/80 to-white border-emerald-200/60 shadow-emerald-100/50 shadow-sm" :
+                              stock.rating === "متابعة" ? "bg-gradient-to-br from-blue-50/80 to-white border-blue-200/60 shadow-blue-100/50 shadow-sm" :
                               "bg-white border-slate-200 shadow-sm"
                             }`}
                             onClick={() => { setSelected(stock); setDialogOpen(true); }}
@@ -417,7 +437,7 @@ export default function StockScreener() {
                               <div className="flex items-start justify-between mb-1">
                                 <div className="flex items-center gap-2">
                                   <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center border border-slate-200">
-                                    <span className="font-bold text-sm text-emerald-600">{stock.symbol.slice(0, 4)}</span>
+                                    <span className="font-bold text-xs text-emerald-600">{stock.symbol.replace(".SR", "")}</span>
                                   </div>
                                   <div>
                                     <div className="flex items-center gap-1.5">
@@ -430,7 +450,7 @@ export default function StockScreener() {
                                   </div>
                                 </div>
                                 <div className="text-left">
-                                  <p className="font-bold text-base text-slate-900">${stock.price.toFixed(2)}</p>
+                                  <p className="font-bold text-base text-slate-900">{formatSAR(stock.price)} <span className="text-[10px] font-normal text-slate-400">ر.س</span></p>
                                   <span className={`text-[11px] flex items-center gap-0.5 ${stock.changePercent >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                                     {stock.changePercent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                                     {stock.changePercent >= 0 ? "+" : ""}{stock.changePercent.toFixed(2)}%
@@ -445,15 +465,15 @@ export default function StockScreener() {
                               <div className="grid grid-cols-4 gap-1 mt-2 text-[10px]">
                                 <div className="bg-emerald-50 rounded p-1 text-center border border-emerald-100">
                                   <p className="text-slate-400">شراء</p>
-                                  <p className="font-semibold text-emerald-700">${stock.buyRangeLow}</p>
+                                  <p className="font-semibold text-emerald-700">{formatSAR(stock.buyRangeLow)}</p>
                                 </div>
                                 <div className="bg-amber-50 rounded p-1 text-center border border-amber-100">
                                   <p className="text-slate-400">هدف 1</p>
-                                  <p className="font-semibold text-amber-700">${stock.target1}</p>
+                                  <p className="font-semibold text-amber-700">{formatSAR(stock.target1)}</p>
                                 </div>
                                 <div className="bg-red-50 rounded p-1 text-center border border-red-100">
                                   <p className="text-slate-400">وقف خسارة</p>
-                                  <p className="font-semibold text-red-600">${stock.stopLoss}</p>
+                                  <p className="font-semibold text-red-600">{formatSAR(stock.stopLoss)}</p>
                                 </div>
                                 <div className="bg-blue-50 rounded p-1 text-center border border-blue-100">
                                   <p className="text-slate-400">عائد</p>
@@ -511,7 +531,8 @@ export default function StockScreener() {
           )}
 
           <div className="mt-8 text-center">
-            <p className="text-[10px] text-slate-400">⚠️ للأغراض التعليمية فقط | منهجية مستوحاة من Naranj Capital (CMT, CFTe) | ليس نصيحة استثمارية</p>
+            <p className="text-[10px] text-slate-400">منهجية تحليل فني متقدمة | سوق تداول السعودي</p>
+            <p className="text-[9px] text-slate-300 mt-1">⚠️ للأغراض التعليمية فقط | ليس نصيحة استثمارية</p>
           </div>
         </main>
       </div>
@@ -524,7 +545,7 @@ export default function StockScreener() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-100 to-green-50 border border-emerald-200 flex items-center justify-center">
-                    <span className="font-bold text-emerald-700">{selected.symbol.slice(0, 4)}</span>
+                    <span className="font-bold text-emerald-700">{selected.symbol.replace(".SR", "")}</span>
                   </div>
                   <div className="text-right flex-1">
                     <div className="flex items-center gap-2">
@@ -536,7 +557,7 @@ export default function StockScreener() {
                         {selected.score}/100
                       </Badge>
                     </div>
-                    <p className="text-xs text-slate-400">{selected.name} | MC: {formatNum(selected.marketCap)}</p>
+                    <p className="text-xs text-slate-400">{selected.name} | القيمة السوقية: {formatNum(selected.marketCap)} ر.س</p>
                   </div>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-slate-400 text-right">
@@ -559,16 +580,16 @@ export default function StockScreener() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
                     <div className="bg-white border border-emerald-200 rounded-lg p-2.5 text-center shadow-sm">
                       <p className="text-[10px] text-slate-400 mb-0.5">نطاق الشراء</p>
-                      <p className="text-sm font-bold text-emerald-700">${selected.buyRangeLow} - ${selected.buyRangeHigh}</p>
+                      <p className="text-sm font-bold text-emerald-700">{formatSAR(selected.buyRangeLow)} - {formatSAR(selected.buyRangeHigh)}</p>
                     </div>
                     <div className="bg-white border border-amber-200 rounded-lg p-2.5 text-center shadow-sm">
                       <p className="text-[10px] text-slate-400 mb-0.5">الأهداف</p>
-                      <p className="text-sm font-bold text-amber-700">T1: ${selected.target1}</p>
-                      <p className="text-[10px] text-slate-400">T2: ${selected.target2} | T3: ${selected.target3}</p>
+                      <p className="text-sm font-bold text-amber-700">T1: {formatSAR(selected.target1)}</p>
+                      <p className="text-[10px] text-slate-400">T2: {formatSAR(selected.target2)} | T3: {formatSAR(selected.target3)}</p>
                     </div>
                     <div className="bg-white border border-red-200 rounded-lg p-2.5 text-center shadow-sm">
                       <p className="text-[10px] text-slate-400 mb-0.5">وقف الخسارة</p>
-                      <p className="text-sm font-bold text-red-600">${selected.stopLoss}</p>
+                      <p className="text-sm font-bold text-red-600">{formatSAR(selected.stopLoss)} ر.س</p>
                     </div>
                     <div className="bg-white border border-blue-200 rounded-lg p-2.5 text-center shadow-sm">
                       <p className="text-[10px] text-slate-400 mb-0.5">العائد المتوقع</p>
@@ -595,9 +616,9 @@ export default function StockScreener() {
               {/* Technical Indicators */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { label: "RSI (14)", value: selected.rsi, color: selected.oversold ? "text-blue-600" : selected.overbought ? "text-red-600" : "text-emerald-600", sub: selected.oversold ? "تشبع بيعي" : selected.overbought ? "تشبع شرائي" : "محايد" },
-                  { label: "SMA 50", value: `$${selected.sma50}`, color: selected.price > selected.sma50 ? "text-emerald-600" : "text-red-600", sub: selected.price > selected.sma50 ? "فوق" : "تحت" },
-                  { label: "SMA 200", value: `$${selected.sma200}`, color: selected.price > selected.sma200 ? "text-emerald-600" : "text-red-600", sub: selected.goldenCross ? "تقاطع ذهبي ✨" : selected.deathCross ? "تقاطع الموت" : "" },
+                  { label: "RSI (14)", value: selected.rsi.toString(), color: selected.oversold ? "text-blue-600" : selected.overbought ? "text-red-600" : "text-emerald-600", sub: selected.oversold ? "تشبع بيعي" : selected.overbought ? "تشبع شرائي" : "محايد" },
+                  { label: "SMA 50", value: `${formatSAR(selected.sma50)} ر.س`, color: selected.price > selected.sma50 ? "text-emerald-600" : "text-red-600", sub: selected.price > selected.sma50 ? "فوق" : "تحت" },
+                  { label: "SMA 200", value: `${formatSAR(selected.sma200)} ر.س`, color: selected.price > selected.sma200 ? "text-emerald-600" : "text-red-600", sub: selected.goldenCross ? "تقاطع ذهبي ✨" : selected.deathCross ? "تقاطع الموت" : "" },
                   { label: "حجم التداول", value: `${selected.volumeRatio}x`, color: selected.volumeRatio > 1.5 ? "text-amber-600" : "text-slate-600", sub: `متوسط: ${formatNum(selected.avgVolume)}` },
                 ].map(ind => (
                   <Card key={ind.label} className="bg-white border-slate-200 shadow-sm">
@@ -616,9 +637,9 @@ export default function StockScreener() {
                   <CardContent className="p-2.5">
                     <p className="text-[10px] text-slate-400 mb-1">بولنجر باند</p>
                     <div className="flex justify-between text-xs">
-                      <span className="text-red-600">علوي: ${selected.bollingerUpper}</span>
-                      <span className="text-slate-500">وسط: ${selected.bollingerMiddle}</span>
-                      <span className="text-emerald-600">سفلي: ${selected.bollingerLower}</span>
+                      <span className="text-red-600">علوي: {formatSAR(selected.bollingerUpper)}</span>
+                      <span className="text-slate-500">وسط: {formatSAR(selected.bollingerMiddle)}</span>
+                      <span className="text-emerald-600">سفلي: {formatSAR(selected.bollingerLower)}</span>
                     </div>
                     {selected.bollingerSqueeze && <Badge className="mt-1 text-[9px] bg-amber-50 text-amber-700 border-amber-200">انضغاط 🔥</Badge>}
                   </CardContent>
@@ -641,9 +662,9 @@ export default function StockScreener() {
               <Card className="bg-white border-slate-200 shadow-sm">
                 <CardContent className="p-3">
                   <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-                    <span>${selected.low52w}</span>
+                    <span>{formatSAR(selected.low52w)} ر.س</span>
                     <span>نطاق 52 أسبوع</span>
-                    <span>${selected.high52w}</span>
+                    <span>{formatSAR(selected.high52w)} ر.س</span>
                   </div>
                   <div className="relative h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
                     <div className="absolute h-full bg-gradient-to-r from-red-400 via-yellow-400 to-emerald-400 rounded-full" style={{ width: `${Math.max(3, selected.percentFromLow)}%` }} />
