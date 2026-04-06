@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
-import { getAllTickers, filterStocks, getBatchQuotes, getStockHistory, analyzeStock } from "@/lib/finance";
+import { STOCK_UNIVERSE, getBatchQuotes, getStockHistory, analyzeStock, filterUniverse } from "@/lib/finance";
 
 // Cache for 10 minutes
 let cachedResponse: { data: unknown; timestamp: number; key: string } | null = null;
 const CACHE_TTL = 10 * 60 * 1000;
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -21,79 +24,31 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Step 1: Scan pages SEQUENTIALLY to find cheap qualifying stocks
-    // API returns stocks sorted by market cap (highest first)
-    // Cheap stocks ($1-$10) with decent market cap are scattered across pages 1-20+
-    const qualifiedStocks: { symbol: string; name: string; lastsale: string; netchange: string; pctchange: string; marketCap: string }[] = [];
-    const maxPages = 20;
-    const maxQualified = 200;
-    const seenSymbols = new Set<string>();
-    let totalScanned = 0;
+    // Step 1: Fetch quotes for all stocks in universe
+    const quotes = await getBatchQuotes(STOCK_UNIVERSE);
+    const totalScanned = Object.keys(quotes).length;
 
-    for (let page = 1; page <= maxPages; page++) {
-      if (qualifiedStocks.length >= maxQualified) break;
+    // Step 2: Filter by price and market cap
+    const qualified = filterUniverse(quotes, maxPrice, minMarketCap, minPrice);
 
-      try {
-        const tickers = await getAllTickers(page, "STOCKS");
-        if (!tickers || tickers.length === 0) continue;
-
-        totalScanned += tickers.length;
-
-        const filtered = filterStocks(
-          tickers as { symbol: string; name: string; lastsale: string; netchange: string; pctchange: string; marketCap: string }[],
-          maxPrice,
-          minMarketCap,
-          minPrice
-        );
-
-        for (const stock of filtered) {
-          if (!seenSymbols.has(stock.symbol)) {
-            seenSymbols.add(stock.symbol);
-            qualifiedStocks.push(stock);
-          }
-        }
-      } catch {
-        // Skip failed pages, continue scanning
-        console.warn(`Skipping page ${page} due to error`);
-      }
-
-      // Small delay between page fetches to avoid rate limiting
-      if (page < maxPages && qualifiedStocks.length < maxQualified) {
-        await new Promise(r => setTimeout(r, 150));
-      }
-    }
-
-    if (qualifiedStocks.length === 0) {
+    if (qualified.length === 0) {
       return NextResponse.json({
         stocks: [],
         total: 0,
         scanned: totalScanned,
-        message: "لا توجد أسهم تطابق المعايير. حاول تقليل الحد الأدنى للقيمة السوقية أو رفع أقصى سعر.",
+        message: "\u0644\u0627 \u062A\u0648\u062C\u062F \u0623\u0633\u0647\u0645 \u062A\u0637\u0627\u0628\u0642 \u0627\u0644\u0645\u0639\u0627\u064A\u064A\u0631. \u062D\u0627\u0648\u0644 \u062A\u0642\u0644\u064A\u0644 \u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0642\u064A\u0645\u0629 \u0627\u0644\u0633\u0648\u0642\u064A\u0629 \u0623\u0648 \u0631\u0641\u0639 \u0623\u0642\u0635\u0649 \u0633\u0639\u0631.",
       });
     }
 
-    // Step 2: Get batch quotes for all found symbols
-    const symbols = qualifiedStocks.map((t) => t.symbol);
-    const quotes = await getBatchQuotes(symbols);
-
-    if (Object.keys(quotes).length === 0) {
-      return NextResponse.json({
-        stocks: [],
-        total: 0,
-        scanned: totalScanned,
-        message: "فشل في جلب البيانات التفصيلية من السوق",
-      });
-    }
-
-    // Step 3: Get history for all quoted stocks (in parallel batches)
-    const quoteEntries = Object.entries(quotes);
+    // Step 3: Get history for all qualifying stocks (in parallel batches)
+    const symbols = qualified.map(q => q.symbol);
     const historyData: Record<string, { date: string; open: number; high: number; low: number; close: number; volume: number }[]> = {};
-    const batchSize = 12;
+    const batchSize = 10;
 
-    for (let i = 0; i < quoteEntries.length; i += batchSize) {
-      const batch = quoteEntries.slice(i, i + batchSize);
+    for (let i = 0; i < symbols.length; i += batchSize) {
+      const batch = symbols.slice(i, i + batchSize);
       await Promise.allSettled(
-        batch.map(async ([sym]) => {
+        batch.map(async (sym) => {
           try {
             const history = await getStockHistory(sym, "1d", 60);
             if (history && history.length > 10) {
@@ -106,15 +61,11 @@ export async function GET(request: Request) {
       );
     }
 
-    // Step 4: Analyze each stock with history data
+    // Step 4: Analyze each stock
     const analyses: ReturnType<typeof analyzeStock>[] = [];
-    for (const [symbol, quote] of quoteEntries) {
-      const history = historyData[symbol] || [];
+    for (const quote of qualified) {
+      const history = historyData[quote.symbol] || [];
       if (history.length < 10) continue;
-
-      // Re-verify price filter with actual quote price
-      const price = quote.regularMarketPrice || 0;
-      if (price < minPrice || price > maxPrice) continue;
 
       const analysis = analyzeStock(quote, history);
       analyses.push(analysis);
@@ -146,7 +97,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Stock screener error:", error);
     return NextResponse.json(
-      { error: "حدث خطأ أثناء تحليل الأسهم", stocks: [], total: 0 },
+      { error: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u062A\u062D\u0644\u064A\u0644 \u0627\u0644\u0623\u0633\u0647\u0645", stocks: [], total: 0 },
       { status: 500 }
     );
   }

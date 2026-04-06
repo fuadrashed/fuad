@@ -1,14 +1,6 @@
-const GATEWAY_URL = "https://internal-api.z.ai/external/finance";
-const HEADERS: Record<string, string> = { "X-Z-AI-From": "Z" };
+import { default as YahooFinance } from "yahoo-finance2";
 
-interface TickerData {
-  symbol: string;
-  name: string;
-  lastsale: string;
-  netchange: string;
-  pctchange: string;
-  marketCap: string;
-}
+const yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
 
 interface QuoteData {
   symbol: string;
@@ -23,10 +15,6 @@ interface QuoteData {
   fiftyTwoWeekHigh: number;
   shortName: string;
   longName?: string;
-  regularMarketOpen: number;
-  regularMarketDayHigh: number;
-  regularMarketDayLow: number;
-  regularMarketPreviousClose: number;
   fiftyDayAverage: number;
   twoHundredDayAverage: number;
   [key: string]: unknown;
@@ -39,50 +27,92 @@ interface HistoryCandle {
   low: number;
   close: number;
   volume: number;
-  adjclose?: number;
 }
 
-export async function getAllTickers(page = 1, type = "STOCKS"): Promise<TickerData[]> {
-  try {
-    const res = await fetch(`${GATEWAY_URL}/v2/markets/tickers?page=${page}&type=${type}`, {
-      headers: HEADERS,
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) {
-      console.warn(`Tickers API returned ${res.status} for page ${page}`);
-      return [];
-    }
-    const data = await res.json();
-    return data.body || [];
-  } catch (err) {
-    console.warn(`Failed to fetch tickers page ${page}:`, err);
-    return [];
-  }
+// Predefined universe of popular US stocks (cheap + growth candidates)
+const STOCK_UNIVERSE = [
+  // Big tech that might be cheap
+  "AAPL","MSFT","GOOG","AMZN","NVDA","META","TSLA","BRK-B","JPM","V",
+  "MA","HD","UNH","PG","JNJ","XOM","AVGO","LLY","CVX","MRK",
+  "ABBV","PEP","KO","COST","TMO","ADBE","CRM","CSCO","ACN","AMD",
+  "NFLX","CMCSA","INTC","ABT","COP","MCD","NKE","TXN","WMT","WFC",
+  "QCOM","BMY","HON","NEE","AMGN","LOW","UPS","LIN","PM","BA",
+  "DE","RTX","SPGI","IBM","CAT","CI","TJX","UNP","BKNG","CVS",
+  "GILD","MDLZ","CB","ADP","ISRG","SYK","MO","LRCX","VRTX","EQIX",
+  "BSX","PLD","REGN","FIS","MU","ZTS","CL","SNPS","DUK","SO",
+  "BDX","CME","BDX","USB","SHW","ITW","APD","EI","ICE","PGR",
+  // Cheaper stocks under $10
+  "ABEV","BBD","ITUB","NOK","HLN","MFG","LYG","BSBR","PFE","VZ",
+  "T","SIRI","INTC","AAL","BAC","WBA","C","NCLH","PLTR","SNAP",
+  "UWMC","F","GM","RIVN","LCID","NIO","MARA","SLB","PARA","WBD",
+  "KO","DIS","UBER","LYFT","SHOP","SQ","RBLX","CRWD","PATH","AI",
+  "SOFI","HOOD","AFRM","RPLA","UPST","LC","OPCH","BMBL","FUBO","VRM",
+  "XPEV","LI","BERY","AVD","CCJ","CDE","CMP","CX","EIGO","EU",
+  "EXEL","FSTR","GOLD","GTE","HBM","HL","HMY","IGC","IO","JAGGF",
+  "KGC","MOS","MUX","NEM","NG","NUGT","NYMT","OG","PAAS","PT",
+  "SAN","SBS","SLV","SVM","TAHO","TECK","TGD","TM","TPST","TRQ",
+  "USAP","UXIN","VEEV","WPM","X","ZIM","AG","AEM","AMR","ARCH",
+  "ATCO","BHP","BKR","CEIX","CHNR","CLF","CWH","DNN","EADSY","EMR",
+  "FMS","FMC","FWONK","GGB","GFI","GLO","GRA","GWRE","HES","HLNE",
+  "HUM","IR","J","JELD","KOP","LUMN","MRO","MT","NUE","OEC",
+  "OSK","PGNY","PVG","RRD","SAND","SBSW","SIX","SJR","SLB","SMFG",
+  "STAG","SU","SVM","TEVA","TFC","TK","TRGP","TRMD","TSEM","TX",
+  "UMC","UWMC","VAL","VALE","VICI","VST","WDS","WLK","WPM","XOM",
+  // More cheap growth stocks
+  "ASTS","AUY","BIRK","BITF","BRFS","BTG","CASY","CEG","CHGG","CRBP",
+  "CVNA","DK","DNUT","ENVX","EVGO","EXC","FREV","FIX","FTNT","GEHC",
+  "GFS","GL","GM","GRAB","GSM","HLNE","HIMS","HNI","IGIC","INMD",
+  "INVH","IRDM","JAMF","JMIA","JXN","KDP","KINS","KN","LCII","LECO",
+  "MNST","MRNA","MSTR","MUI","NMRD","NRDS","NXST","OCFC","ON","OTEX",
+  "PCGS","PINS","PRGS","PRO","PYPL","QRTEA","RCMT","RDVT","RIG","RNW",
+  "RVP","RXST","SAVA","SBLK","SCU","SE","SEAS","SITC","SMCI","SNGX",
+  "SOFI","SQNS","SSTK","STR","SUN","SUPN","TAL","TCOM","TGI","TLRY",
+  "TNET","TR","TRMB","TSE","TTD","TTE","TWLO","TXN","UCBI","UCPT",
+  "UHAL","UNTY","UPOW","USAC","USPH","VBTX","VIAV","VIR","VNT",
+  "VOXX","VRT","VTRS","WB","WDC","WERN","WH","WIRE","WPC","WW",
+  "XCUR","XERS","XM","XPEL","YMM","ZA","ZETA","ZIMV","ZNTL"
+];
+
+interface TickerData {
+  symbol: string;
+  name: string;
+  lastsale: string;
+  netchange: string;
+  pctchange: string;
+  marketCap: string;
+}
+
+export async function getAllTickers(_page = 1, _type = "STOCKS"): Promise<TickerData[]> {
+  // Not used anymore - we use the predefined universe
+  return [];
 }
 
 export async function getBatchQuotes(tickers: string[]): Promise<Record<string, QuoteData>> {
   if (tickers.length === 0) return {};
+  const result: Record<string, QuoteData> = {};
+
+  // Fetch in batches of 20
   const batches: string[][] = [];
   for (let i = 0; i < tickers.length; i += 20) {
     batches.push(tickers.slice(i, i + 20));
   }
-  const result: Record<string, QuoteData> = {};
+
   for (const batch of batches) {
-    const tickerStr = batch.join(",");
-    const res = await fetch(
-      `${GATEWAY_URL}/v1/markets/stock/quotes?ticker=${encodeURIComponent(tickerStr)}`,
-      { headers: HEADERS }
-    );
-    if (!res.ok) continue;
-    const data = await res.json();
-    const quotes = data.body || data;
-    for (const q of Array.isArray(quotes) ? quotes : []) {
-      if (q.symbol) {
-        result[q.symbol] = q as QuoteData;
+    try {
+      const quotes = await yf.quote(batch.map(s => s.replace("-", "-")));
+      const arr = Array.isArray(quotes) ? quotes : [quotes];
+      for (const q of arr) {
+        if (q && q.symbol) {
+          result[q.symbol] = q as unknown as QuoteData;
+        }
       }
+    } catch (err) {
+      console.warn("Batch quote error:", err);
     }
-    await new Promise((r) => setTimeout(r, 200));
+    // Small delay between batches
+    await new Promise(r => setTimeout(r, 300));
   }
+
   return result;
 }
 
@@ -91,23 +121,35 @@ export async function getStockHistory(
   interval = "1d",
   limit = 60
 ): Promise<HistoryCandle[]> {
-  const res = await fetch(
-    `${GATEWAY_URL}/v2/markets/stock/history?symbol=${encodeURIComponent(symbol)}&interval=${interval}&limit=${limit}`,
-    { headers: HEADERS }
-  );
-  if (!res.ok) throw new Error(`Failed to fetch history for ${symbol}: ${res.status}`);
-  const data = await res.json();
-  return data.body || [];
-}
+  try {
+    const rangeMap: Record<string, string> = {
+      "1d": limit <= 7 ? "5d" : limit <= 30 ? "1mo" : "3mo",
+      "1wk": "6mo",
+      "1mo": "1y",
+    };
+    const range = rangeMap[interval] || "3mo";
 
-function parsePrice(priceStr: string): number {
-  if (!priceStr) return 0;
-  return parseFloat(priceStr.replace(/[$,]/g, "")) || 0;
-}
+    const result = await yf.chart(symbol, {
+      period1: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+      interval: "1d" as const,
+    });
 
-function parseMarketCap(capStr: string): number {
-  if (!capStr || capStr === "NA") return 0;
-  return parseFloat(capStr.replace(/[$,]/g, "")) || 0;
+    if (!result || !result.quotes) return [];
+
+    return result.quotes
+      .filter((q: { close?: number }) => q.close != null)
+      .map((q: { date: Date | string; open: number; high: number; low: number; close: number; volume: number }) => ({
+        date: typeof q.date === "string" ? q.date : (q.date as Date).toISOString().split("T")[0],
+        open: q.open || 0,
+        high: q.high || 0,
+        low: q.low || 0,
+        close: q.close || 0,
+        volume: q.volume || 0,
+      }));
+  } catch (err) {
+    console.warn(`History error for ${symbol}:`, err);
+    return [];
+  }
 }
 
 export function filterStocks(
@@ -119,17 +161,28 @@ export function filterStocks(
   return tickers.filter((t) => {
     if (t.symbol.includes("^")) return false;
     if (t.symbol.includes(".W")) return false;
-    if (t.symbol.includes(".U")) return false;
-    if (t.symbol.length < 1 || t.symbol.length > 5) return false;
-    const price = parsePrice(t.lastsale);
+    const price = parseFloat(t.lastsale.replace(/[$,]/g, "")) || 0;
     if (price < minPrice || price > maxPrice) return false;
-    if (!t.name || t.name.trim() === "") return false;
-    const mcapStr = t.marketCap || "";
-    if (mcapStr === "NA" || mcapStr === "") return false;
-    const mcap = parseMarketCap(mcapStr);
+    const mcap = parseFloat((t.marketCap || "0").replace(/[$,]/g, "")) || 0;
     return mcap >= minMarketCap;
   });
 }
+
+// Filter universe by price using quotes
+export function filterUniverse(
+  quotes: Record<string, QuoteData>,
+  maxPrice: number = 10,
+  minMarketCap: number = 500_000_000,
+  minPrice: number = 0.10
+): QuoteData[] {
+  return Object.values(quotes).filter((q) => {
+    const price = q.regularMarketPrice || 0;
+    const mcap = q.marketCap || 0;
+    return price >= minPrice && price <= maxPrice && mcap >= minMarketCap;
+  });
+}
+
+export { STOCK_UNIVERSE };
 
 export interface StockAnalysis {
   symbol: string;
@@ -361,7 +414,7 @@ export function analyzeStock(
   else if (pctFromHigh > 15) { score += 5; }
   else if (pctFromHigh > 5) { score += 2; }
 
-  // Cheap stock bonus - lower priced stocks have more upside potential
+  // Cheap stock bonus
   if (price < 3) { score += 8; signals.push("\u0633\u0639\u0631 \u0631\u062E\u064A\u0635 \u062C\u062F\u0627 (<$3)"); }
   else if (price < 5) { score += 5; signals.push("\u0633\u0639\u0631 \u0645\u0646\u062E\u0641\u0636 (<$5)"); }
   else if (price < 10) { score += 3; }
