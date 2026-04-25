@@ -1,6 +1,5 @@
-import { default as YahooFinance } from "yahoo-finance2";
-
-const yf = new YahooFinance({ suppressNotices: ["yahooSurvey"] });
+const FMP_API_KEY = "69dbe6f92f0a64.72326163";
+const FMP_BASE = "https://financialmodelingprep.com/api/v3";
 
 interface QuoteData {
   symbol: string;
@@ -29,9 +28,7 @@ interface HistoryCandle {
   volume: number;
 }
 
-// Predefined universe of popular US stocks (cheap + growth candidates)
 const STOCK_UNIVERSE = [
-  // Big tech that might be cheap
   "AAPL","MSFT","GOOG","AMZN","NVDA","META","TSLA","BRK-B","JPM","V",
   "MA","HD","UNH","PG","JNJ","XOM","AVGO","LLY","CVX","MRK",
   "ABBV","PEP","KO","COST","TMO","ADBE","CRM","CSCO","ACN","AMD",
@@ -40,37 +37,24 @@ const STOCK_UNIVERSE = [
   "DE","RTX","SPGI","IBM","CAT","CI","TJX","UNP","BKNG","CVS",
   "GILD","MDLZ","CB","ADP","ISRG","SYK","MO","LRCX","VRTX","EQIX",
   "BSX","PLD","REGN","FIS","MU","ZTS","CL","SNPS","DUK","SO",
-  "BDX","CME","BDX","USB","SHW","ITW","APD","EI","ICE","PGR",
-  // Cheaper stocks under $10
+  "BDX","CME","USB","SHW","ITW","APD","ICE","PGR",
   "ABEV","BBD","ITUB","NOK","HLN","MFG","LYG","BSBR","PFE","VZ",
-  "T","SIRI","INTC","AAL","BAC","WBA","C","NCLH","PLTR","SNAP",
+  "T","SIRI","AAL","BAC","WBA","C","NCLH","PLTR","SNAP",
   "UWMC","F","GM","RIVN","LCID","NIO","MARA","SLB","PARA","WBD",
-  "KO","DIS","UBER","LYFT","SHOP","SQ","RBLX","CRWD","PATH","AI",
-  "SOFI","HOOD","AFRM","RPLA","UPST","LC","OPCH","BMBL","FUBO","VRM",
-  "XPEV","LI","BERY","AVD","CCJ","CDE","CMP","CX","EIGO","EU",
-  "EXEL","FSTR","GOLD","GTE","HBM","HL","HMY","IGC","IO","JAGGF",
-  "KGC","MOS","MUX","NEM","NG","NUGT","NYMT","OG","PAAS","PT",
-  "SAN","SBS","SLV","SVM","TAHO","TECK","TGD","TM","TPST","TRQ",
-  "USAP","UXIN","VEEV","WPM","X","ZIM","AG","AEM","AMR","ARCH",
-  "ATCO","BHP","BKR","CEIX","CHNR","CLF","CWH","DNN","EADSY","EMR",
-  "FMS","FMC","FWONK","GGB","GFI","GLO","GRA","GWRE","HES","HLNE",
-  "HUM","IR","J","JELD","KOP","LUMN","MRO","MT","NUE","OEC",
-  "OSK","PGNY","PVG","RRD","SAND","SBSW","SIX","SJR","SLB","SMFG",
-  "STAG","SU","SVM","TEVA","TFC","TK","TRGP","TRMD","TSEM","TX",
-  "UMC","UWMC","VAL","VALE","VICI","VST","WDS","WLK","WPM","XOM",
-  // More cheap growth stocks
-  "ASTS","AUY","BIRK","BITF","BRFS","BTG","CASY","CEG","CHGG","CRBP",
-  "CVNA","DK","DNUT","ENVX","EVGO","EXC","FREV","FIX","FTNT","GEHC",
-  "GFS","GL","GM","GRAB","GSM","HLNE","HIMS","HNI","IGIC","INMD",
-  "INVH","IRDM","JAMF","JMIA","JXN","KDP","KINS","KN","LCII","LECO",
-  "MNST","MRNA","MSTR","MUI","NMRD","NRDS","NXST","OCFC","ON","OTEX",
-  "PCGS","PINS","PRGS","PRO","PYPL","QRTEA","RCMT","RDVT","RIG","RNW",
-  "RVP","RXST","SAVA","SBLK","SCU","SE","SEAS","SITC","SMCI","SNGX",
-  "SOFI","SQNS","SSTK","STR","SUN","SUPN","TAL","TCOM","TGI","TLRY",
-  "TNET","TR","TRMB","TSE","TTD","TTE","TWLO","TXN","UCBI","UCPT",
-  "UHAL","UNTY","UPOW","USAC","USPH","VBTX","VIAV","VIR","VNT",
-  "VOXX","VRT","VTRS","WB","WDC","WERN","WH","WIRE","WPC","WW",
-  "XCUR","XERS","XM","XPEL","YMM","ZA","ZETA","ZIMV","ZNTL"
+  "DIS","UBER","LYFT","SHOP","SQ","RBLX","CRWD","PATH","AI",
+  "SOFI","HOOD","AFRM","UPST","LC","BMBL","FUBO",
+  "XPEV","LI","CCJ","CDE","CX","EXEL","GOLD","GTE","HBM","HL",
+  "HMY","KGC","MOS","MUX","NEM","NG","NYMT","PAAS",
+  "SAN","SBS","SVM","TECK","TM","TEVA","WPM","X","ZIM","AG",
+  "AEM","CLF","DNN","EMR","FMC","GGB","GFI","HES","HUM",
+  "MRO","MT","NUE","OSK","SAND","SBSW","SIX","SLB","SMFG",
+  "STAG","TRGP","TSEM","TX","UMC","VALE","VICI","VST","WLK","WPM",
+  "ASTS","BTG","CEG","CHGG","CVNA","DK","DNUT","ENVX","EVGO","EXC",
+  "FTNT","GEHC","GFS","GM","GRAB","HIMS","INMD","INVH","IRDM",
+  "JMIA","KDP","MNST","MRNA","MSTR","NXST","ON","OTEX",
+  "PINS","PYPL","RIG","SBLK","SE","SEAS","SITC","SMCI","SOFI",
+  "STR","TAL","TCOM","TLRY","TTD","TWLO","UPST","VALE","VNT",
+  "WDC","WIRE","WPC","XCUR","ZETA",
 ];
 
 interface TickerData {
@@ -83,7 +67,6 @@ interface TickerData {
 }
 
 export async function getAllTickers(_page = 1, _type = "STOCKS"): Promise<TickerData[]> {
-  // Not used anymore - we use the predefined universe
   return [];
 }
 
@@ -91,26 +74,47 @@ export async function getBatchQuotes(tickers: string[]): Promise<Record<string, 
   if (tickers.length === 0) return {};
   const result: Record<string, QuoteData> = {};
 
-  // Fetch in batches of 20
+  const batchSize = 100;
   const batches: string[][] = [];
-  for (let i = 0; i < tickers.length; i += 20) {
-    batches.push(tickers.slice(i, i + 20));
+  for (let i = 0; i < tickers.length; i += batchSize) {
+    batches.push(tickers.slice(i, i + batchSize));
   }
 
   for (const batch of batches) {
     try {
-      const quotes = await yf.quote(batch.map(s => s.replace("-", "-")));
-      const arr = Array.isArray(quotes) ? quotes : [quotes];
-      for (const q of arr) {
-        if (q && q.symbol) {
-          result[q.symbol] = q as unknown as QuoteData;
-        }
+      const symbols = batch.join(",");
+      const url = `${FMP_BASE}/quote/${symbols}?apikey=${FMP_API_KEY}`;
+      const res = await fetch(url, { next: { revalidate: 300 } });
+      if (!res.ok) {
+        console.warn("FMP quote error:", res.status);
+        continue;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data)) continue;
+
+      for (const q of data) {
+        if (!q || !q.symbol) continue;
+        result[q.symbol] = {
+          symbol: q.symbol,
+          regularMarketPrice: q.price ?? 0,
+          regularMarketChange: q.change ?? 0,
+          regularMarketChangePercent: q.changesPercentage ?? 0,
+          regularMarketVolume: q.volume ?? 0,
+          averageDailyVolume3Month: q.avgVolume ?? 1,
+          averageDailyVolume10Day: q.avgVolume ?? 1,
+          marketCap: q.marketCap ?? 0,
+          fiftyTwoWeekLow: q.yearLow ?? 0,
+          fiftyTwoWeekHigh: q.yearHigh ?? 0,
+          shortName: q.name ?? q.symbol,
+          longName: q.name ?? q.symbol,
+          fiftyDayAverage: q.priceAvg50 ?? 0,
+          twoHundredDayAverage: q.priceAvg200 ?? 0,
+        };
       }
     } catch (err) {
       console.warn("Batch quote error:", err);
     }
-    // Small delay between batches
-    await new Promise(r => setTimeout(r, 300));
+    await new Promise(r => setTimeout(r, 200));
   }
 
   return result;
@@ -118,33 +122,27 @@ export async function getBatchQuotes(tickers: string[]): Promise<Record<string, 
 
 export async function getStockHistory(
   symbol: string,
-  interval = "1d",
+  _interval = "1d",
   limit = 60
 ): Promise<HistoryCandle[]> {
   try {
-    const rangeMap: Record<string, string> = {
-      "1d": limit <= 7 ? "5d" : limit <= 30 ? "1mo" : "3mo",
-      "1wk": "6mo",
-      "1mo": "1y",
-    };
-    const range = rangeMap[interval] || "3mo";
+    const url = `${FMP_BASE}/historical-price-full/${symbol}?timeseries=${limit}&apikey=${FMP_API_KEY}`;
+    const res = await fetch(url, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
 
-    const result = await yf.chart(symbol, {
-      period1: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-      interval: "1d" as const,
-    });
+    const data = await res.json();
+    if (!data || !data.historical) return [];
 
-    if (!result || !result.quotes) return [];
-
-    return result.quotes
-      .filter((q: { close?: number }) => q.close != null)
-      .map((q: { date: Date | string; open: number; high: number; low: number; close: number; volume: number }) => ({
-        date: typeof q.date === "string" ? q.date : (q.date as Date).toISOString().split("T")[0],
-        open: q.open || 0,
-        high: q.high || 0,
-        low: q.low || 0,
-        close: q.close || 0,
-        volume: q.volume || 0,
+    return data.historical
+      .slice(0, limit)
+      .reverse()
+      .map((c: { date: string; open: number; high: number; low: number; close: number; volume: number }) => ({
+        date: c.date,
+        open: c.open ?? 0,
+        high: c.high ?? 0,
+        low: c.low ?? 0,
+        close: c.close ?? 0,
+        volume: c.volume ?? 0,
       }));
   } catch (err) {
     console.warn(`History error for ${symbol}:`, err);
@@ -168,7 +166,6 @@ export function filterStocks(
   });
 }
 
-// Filter universe by price using quotes
 export function filterUniverse(
   quotes: Record<string, QuoteData>,
   maxPrice: number = 10,
@@ -185,54 +182,18 @@ export function filterUniverse(
 export { STOCK_UNIVERSE };
 
 export interface StockAnalysis {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  marketCap: number;
-  rsi: number;
-  sma20: number;
-  sma50: number;
-  sma200: number;
-  ema12: number;
-  ema26: number;
-  macdLine: number;
-  macdSignal: number;
-  macdHistogram: number;
-  bollingerUpper: number;
-  bollingerLower: number;
-  bollingerMiddle: number;
-  atr: number;
-  volume: number;
-  avgVolume: number;
-  volumeRatio: number;
-  high52w: number;
-  low52w: number;
-  percentFromLow: number;
-  percentFromHigh: number;
-  nearSupport: boolean;
-  nearResistance: boolean;
-  consolidating: boolean;
-  breakoutUp: boolean;
-  oversold: boolean;
-  overbought: boolean;
-  goldenCross: boolean;
-  deathCross: boolean;
-  macdBullish: boolean;
-  bollingerSqueeze: boolean;
-  buyRangeLow: number;
-  buyRangeHigh: number;
-  target1: number;
-  target2: number;
-  target3: number;
-  stopLoss: number;
-  riskRewardRatio: number;
-  expectedReturn: number;
-  holdingPeriod: string;
-  score: number;
-  rating: string;
-  signals: string[];
+  symbol: string; name: string; price: number; change: number; changePercent: number;
+  marketCap: number; rsi: number; sma20: number; sma50: number; sma200: number;
+  ema12: number; ema26: number; macdLine: number; macdSignal: number; macdHistogram: number;
+  bollingerUpper: number; bollingerLower: number; bollingerMiddle: number; atr: number;
+  volume: number; avgVolume: number; volumeRatio: number;
+  high52w: number; low52w: number; percentFromLow: number; percentFromHigh: number;
+  nearSupport: boolean; nearResistance: boolean; consolidating: boolean; breakoutUp: boolean;
+  oversold: boolean; overbought: boolean; goldenCross: boolean; deathCross: boolean;
+  macdBullish: boolean; bollingerSqueeze: boolean;
+  buyRangeLow: number; buyRangeHigh: number; target1: number; target2: number; target3: number;
+  stopLoss: number; riskRewardRatio: number; expectedReturn: number; holdingPeriod: string;
+  score: number; rating: string; signals: string[];
 }
 
 function calcSMA(data: number[], period: number): number {
@@ -253,35 +214,24 @@ function calcEMA(data: number[], period: number): number {
 
 function calcRSI(closes: number[], period = 14): number {
   if (closes.length < period + 1) return 50;
-  let avgGain = 0;
-  let avgLoss = 0;
+  let avgGain = 0, avgLoss = 0;
   for (let i = 1; i <= period; i++) {
     const diff = closes[i] - closes[i - 1];
-    if (diff > 0) avgGain += diff;
-    else avgLoss += Math.abs(diff);
+    if (diff > 0) avgGain += diff; else avgLoss += Math.abs(diff);
   }
-  avgGain /= period;
-  avgLoss /= period;
+  avgGain /= period; avgLoss /= period;
   for (let i = period + 1; i < closes.length; i++) {
     const diff = closes[i] - closes[i - 1];
-    if (diff > 0) {
-      avgGain = (avgGain * (period - 1) + diff) / period;
-      avgLoss = (avgLoss * (period - 1)) / period;
-    } else {
-      avgGain = (avgGain * (period - 1)) / period;
-      avgLoss = (avgLoss * (period - 1) + Math.abs(diff)) / period;
-    }
+    if (diff > 0) { avgGain = (avgGain * (period - 1) + diff) / period; avgLoss = (avgLoss * (period - 1)) / period; }
+    else { avgGain = (avgGain * (period - 1)) / period; avgLoss = (avgLoss * (period - 1) + Math.abs(diff)) / period; }
   }
   if (avgLoss === 0) return 100;
-  const rs = avgGain / avgLoss;
-  return 100 - 100 / (1 + rs);
+  return 100 - 100 / (1 + avgGain / avgLoss);
 }
 
 function calcMACD(closes: number[]) {
   if (closes.length < 26) return { line: 0, signal: 0, histogram: 0 };
-  const ema12 = calcEMA(closes, 12);
-  const ema26 = calcEMA(closes, 26);
-  const line = ema12 - ema26;
+  const line = calcEMA(closes, 12) - calcEMA(closes, 26);
   const vals: number[] = [];
   for (let i = 26; i <= closes.length; i++) {
     vals.push(calcEMA(closes.slice(0, i), 12) - calcEMA(closes.slice(0, i), 26));
@@ -291,14 +241,10 @@ function calcMACD(closes: number[]) {
 }
 
 function calcBollinger(closes: number[], period = 20) {
-  if (closes.length < period) {
-    const p = closes[closes.length - 1] || 0;
-    return { upper: p * 1.02, middle: p, lower: p * 0.98 };
-  }
+  if (closes.length < period) { const p = closes[closes.length - 1] || 0; return { upper: p * 1.02, middle: p, lower: p * 0.98 }; }
   const s = closes.slice(-period);
   const mid = s.reduce((a, b) => a + b, 0) / period;
-  const v = s.reduce((sum, val) => sum + Math.pow(val - mid, 2), 0) / period;
-  const std = Math.sqrt(v);
+  const std = Math.sqrt(s.reduce((sum, val) => sum + Math.pow(val - mid, 2), 0) / period);
   return { upper: mid + 2 * std, lower: mid - 2 * std, middle: mid };
 }
 
@@ -306,18 +252,13 @@ function calcATR(candles: HistoryCandle[], period = 14): number {
   if (candles.length < period + 1) return 0;
   let sum = 0;
   for (let i = candles.length - period; i < candles.length; i++) {
-    const c = candles[i];
-    const prev = candles[i - 1] ? candles[i - 1].close : c.open;
-    const tr = Math.max(c.high - c.low, Math.abs(c.high - prev), Math.abs(c.low - prev));
-    sum += tr;
+    const c = candles[i]; const prev = candles[i - 1] ? candles[i - 1].close : c.open;
+    sum += Math.max(c.high - c.low, Math.abs(c.high - prev), Math.abs(c.low - prev));
   }
   return sum / period;
 }
 
-export function analyzeStock(
-  quote: QuoteData,
-  history: HistoryCandle[]
-): StockAnalysis {
+export function analyzeStock(quote: QuoteData, history: HistoryCandle[]): StockAnalysis {
   const price = quote.regularMarketPrice || 0;
   const change = quote.regularMarketChange || 0;
   const changePercent = quote.regularMarketChangePercent || 0;
@@ -365,66 +306,64 @@ export function analyzeStock(
   const riskRewardRatio = riskDist > 0 ? (target1 - price) / riskDist : 0;
   const expectedReturn = price > 0 ? ((target1 - price) / price) * 100 : 0;
 
-  let holdingPeriod = "3-5 \u0623\u064A\u0627\u0645";
-  if (expectedReturn > 30) holdingPeriod = "2-4 \u0623\u0633\u0627\u0628\u064A\u0639";
-  else if (expectedReturn > 15) holdingPeriod = "1-3 \u0623\u0633\u0627\u0628\u064A\u0639";
-  else if (expectedReturn > 8) holdingPeriod = "1-2 \u0623\u0633\u0628\u0648\u0639";
+  let holdingPeriod = "3-5 أيام";
+  if (expectedReturn > 30) holdingPeriod = "2-4 أسابيع";
+  else if (expectedReturn > 15) holdingPeriod = "1-3 أسابيع";
+  else if (expectedReturn > 8) holdingPeriod = "1-2 أسبوع";
 
   let score = 0;
   const signals: string[] = [];
 
-  if (rsi < 30) { score += 20; signals.push("RSI \u062A\u0634\u0628\u0639 \u0628\u064A\u0639\u064A"); }
-  else if (rsi < 40) { score += 18; signals.push("RSI \u0645\u0646\u062E\u0641\u0636"); }
-  else if (rsi < 50) { score += 14; signals.push("RSI \u0645\u062D\u0627\u064A\u062F"); }
+  if (rsi < 30) { score += 20; signals.push("RSI تشبع بيعي"); }
+  else if (rsi < 40) { score += 18; signals.push("RSI منخفض"); }
+  else if (rsi < 50) { score += 14; signals.push("RSI محايد"); }
   else if (rsi < 60) { score += 10; }
   else if (rsi < 70) { score += 5; }
-  else if (rsi > 75) { score -= 5; signals.push("RSI \u062A\u0634\u0628\u0639 \u0634\u0631\u0627\u0626\u064A"); }
+  else if (rsi > 75) { score -= 5; signals.push("RSI تشبع شرائي"); }
 
-  if (volumeRatio > 3) { score += 18; signals.push("\u062D\u062C\u0645 \u062A\u062F\u0627\u0648\u0644 \u0645\u0631\u062A\u0641\u0639 \u062C\u062F\u0627"); }
-  else if (volumeRatio > 2) { score += 14; signals.push("\u0627\u0631\u062A\u0641\u0627\u0639 \u0645\u0644\u062D\u0648\u0638 \u0641\u064A \u0627\u0644\u062D\u062C\u0645"); }
-  else if (volumeRatio > 1.5) { score += 10; signals.push("\u062D\u062C\u0645 \u0623\u0639\u0644\u0649 \u0645\u0646 \u0627\u0644\u0645\u062A\u0648\u0633\u0637"); }
+  if (volumeRatio > 3) { score += 18; signals.push("حجم تداول مرتفع جداً"); }
+  else if (volumeRatio > 2) { score += 14; signals.push("ارتفاع ملحوظ في الحجم"); }
+  else if (volumeRatio > 1.5) { score += 10; signals.push("حجم أعلى من المتوسط"); }
   else if (volumeRatio > 1.0) { score += 5; }
 
-  if (goldenCross) { score += 15; signals.push("\u062A\u0642\u0627\u0637\u0639 \u0630\u0647\u0628\u064A SMA50/200"); }
-  else if (sma50 > sma200) { score += 10; signals.push("\u0627\u062A\u062C\u0627\u0647 \u0635\u0627\u0639\u062F"); }
-  else if (deathCross) { score -= 10; signals.push("\u062A\u0642\u0627\u0637\u0639 \u0627\u0644\u0645\u0648\u062A SMA50/200"); }
+  if (goldenCross) { score += 15; signals.push("تقاطع ذهبي SMA50/200"); }
+  else if (sma50 > sma200) { score += 10; signals.push("اتجاه صاعد"); }
+  else if (deathCross) { score -= 10; signals.push("تقاطع الموت SMA50/200"); }
 
-  if (price > sma20) { score += 10; }
-  else if (price > sma50) { score += 5; }
+  if (price > sma20) { score += 10; } else if (price > sma50) { score += 5; }
 
-  if (price <= bb.lower) { score += 15; signals.push("\u0627\u0644\u0633\u0639\u0631 \u0639\u0646\u062F \u0627\u0644\u062D\u062F \u0627\u0644\u0633\u0641\u0644\u064A \u0644\u0628\u0648\u0644\u0646\u062C\u0631"); }
-  else if (price <= bb.lower * 1.02) { score += 12; signals.push("\u0642\u0631\u0628 \u0627\u0644\u062D\u062F \u0627\u0644\u0633\u0641\u0644\u064A \u0644\u0628\u0648\u0644\u0646\u062C\u0631"); }
-  else if (bollingerSqueeze) { score += 10; signals.push("\u0627\u0646\u0636\u063A\u0627\u0637 \u0628\u0648\u0644\u0646\u062C\u0631"); }
+  if (price <= bb.lower) { score += 15; signals.push("السعر عند الحد السفلي لبولنجر"); }
+  else if (price <= bb.lower * 1.02) { score += 12; signals.push("قرب الحد السفلي لبولنجر"); }
+  else if (bollingerSqueeze) { score += 10; signals.push("انضغاط بولنجر"); }
 
-  if (macdBullish) { score += 10; signals.push("MACD \u0625\u064A\u062C\u0627\u0628\u064A"); }
+  if (macdBullish) { score += 10; signals.push("MACD إيجابي"); }
   else if (macd.histogram > 0) { score += 5; }
 
-  if (nearSupport && !oversold) { score += 10; signals.push("\u0642\u0631\u0628 \u0645\u0633\u062A\u0648\u0649 \u062F\u0639\u0645 \u0642\u0648\u064A"); }
+  if (nearSupport && !oversold) { score += 10; signals.push("قرب مستوى دعم قوي"); }
   else if (price < sma200 && sma200 > 0) { score += 5; }
 
-  if (consolidating) { score += 10; signals.push("\u062A\u0630\u0628\u0630\u0628 \u0636\u064A\u0642 (\u062C\u0627\u0647\u0632 \u0644\u0644\u0627\u0646\u0637\u0644\u0627\u0642)"); }
-  if (breakoutUp) { score += 10; signals.push("\u0643\u0633\u0631 \u0645\u0642\u0627\u0648\u0645\u0629 \u0628\u062D\u062C\u0645 \u0645\u0631\u062A\u0641\u0639"); }
+  if (consolidating) { score += 10; signals.push("تذبذب ضيق (جاهز للانطلاق)"); }
+  if (breakoutUp) { score += 10; signals.push("كسر مقاومة بحجم مرتفع"); }
 
-  if (changePercent > 3 && volumeRatio > 1.5) { score += 10; signals.push("\u0632\u062E\u0645 \u0642\u0648\u064A"); }
-  else if (changePercent > 1.5 && volumeRatio > 1.0) { score += 6; signals.push("\u0632\u062E\u0645 \u0645\u062A\u0648\u0633\u0637"); }
+  if (changePercent > 3 && volumeRatio > 1.5) { score += 10; signals.push("زخم قوي"); }
+  else if (changePercent > 1.5 && volumeRatio > 1.0) { score += 6; signals.push("زخم متوسط"); }
   else if (changePercent > 0.5) { score += 3; }
 
-  if (pctFromHigh > 40) { score += 12; signals.push("\u062E\u0635\u0645 \u0643\u0628\u064A\u0631 \u0645\u0646 \u0623\u0639\u0644\u0649 52 \u0623\u0633\u0628\u0648\u0639"); }
-  else if (pctFromHigh > 25) { score += 9; signals.push("\u062E\u0635\u0645 \u0645\u0639\u062A\u062F\u0644"); }
+  if (pctFromHigh > 40) { score += 12; signals.push("خصم كبير من أعلى 52 أسبوع"); }
+  else if (pctFromHigh > 25) { score += 9; signals.push("خصم معتدل"); }
   else if (pctFromHigh > 15) { score += 5; }
   else if (pctFromHigh > 5) { score += 2; }
 
-  // Cheap stock bonus
-  if (price < 3) { score += 8; signals.push("\u0633\u0639\u0631 \u0631\u062E\u064A\u0635 \u062C\u062F\u0627 (<$3)"); }
-  else if (price < 5) { score += 5; signals.push("\u0633\u0639\u0631 \u0645\u0646\u062E\u0641\u0636 (<$5)"); }
+  if (price < 3) { score += 8; signals.push("سعر رخيص جداً (<$3)"); }
+  else if (price < 5) { score += 5; signals.push("سعر منخفض (<$5)"); }
   else if (price < 10) { score += 3; }
 
-  let rating = "\u0645\u062A\u0627\u0628\u0639\u0629";
-  if (score >= 70) rating = "\u0630\u0647\u0628\u064A";
-  else if (score >= 55) rating = "\u0648\u0627\u0639\u062F";
-  else if (score >= 40) rating = "\u0645\u062A\u0627\u0628\u0639\u0629";
-  else if (score >= 25) rating = "\u0645\u062D\u0627\u064A\u062F";
-  else rating = "\u0628\u064A\u0639";
+  let rating = "متابعة";
+  if (score >= 70) rating = "ذهبي";
+  else if (score >= 55) rating = "واعد";
+  else if (score >= 40) rating = "متابعة";
+  else if (score >= 25) rating = "محايد";
+  else rating = "بيع";
 
   score = Math.max(0, Math.min(100, score));
 
@@ -456,7 +395,6 @@ export function analyzeStock(
     buyRangeLow, buyRangeHigh, target1, target2, target3, stopLoss,
     riskRewardRatio: Math.round(riskRewardRatio * 10) / 10,
     expectedReturn: Math.round(expectedReturn * 10) / 10,
-    holdingPeriod,
-    score, rating, signals,
+    holdingPeriod, score, rating, signals,
   };
 }
