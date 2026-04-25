@@ -1,5 +1,5 @@
-const FMP_API_KEY = "69dbe6f92f0a64.72326163";
-const FMP_BASE = "https://financialmodelingprep.com/api/v3";
+const EODHD_API_KEY = "69dbe6f92f0a64.72326163";
+const EODHD_BASE = "https://eodhd.com/api";
 
 interface QuoteData {
   symbol: string;
@@ -29,32 +29,28 @@ interface HistoryCandle {
 }
 
 const STOCK_UNIVERSE = [
-  "AAPL","MSFT","GOOG","AMZN","NVDA","META","TSLA","BRK-B","JPM","V",
+  "AAPL","MSFT","GOOG","AMZN","NVDA","META","TSLA","JPM","V",
   "MA","HD","UNH","PG","JNJ","XOM","AVGO","LLY","CVX","MRK",
-  "ABBV","PEP","KO","COST","TMO","ADBE","CRM","CSCO","ACN","AMD",
+  "ABBV","PEP","KO","COST","ADBE","CRM","CSCO","ACN","AMD",
   "NFLX","CMCSA","INTC","ABT","COP","MCD","NKE","TXN","WMT","WFC",
-  "QCOM","BMY","HON","NEE","AMGN","LOW","UPS","LIN","PM","BA",
-  "DE","RTX","SPGI","IBM","CAT","CI","TJX","UNP","BKNG","CVS",
-  "GILD","MDLZ","CB","ADP","ISRG","SYK","MO","LRCX","VRTX","EQIX",
-  "BSX","PLD","REGN","FIS","MU","ZTS","CL","SNPS","DUK","SO",
-  "BDX","CME","USB","SHW","ITW","APD","ICE","PGR",
-  "ABEV","BBD","ITUB","NOK","HLN","MFG","LYG","BSBR","PFE","VZ",
+  "QCOM","BMY","HON","NEE","AMGN","LOW","UPS","PM","BA",
+  "DE","RTX","IBM","CAT","TJX","UNP","CVS",
+  "GILD","MDLZ","ADP","ISRG","SYK","MO","LRCX","VRTX",
+  "BSX","PLD","REGN","MU","ZTS","CL","DUK","SO",
+  "BDX","CME","USB","SHW","ITW","APD","PGR",
+  "ABEV","BBD","ITUB","NOK","MFG","LYG","PFE","VZ",
   "T","SIRI","AAL","BAC","WBA","C","NCLH","PLTR","SNAP",
   "UWMC","F","GM","RIVN","LCID","NIO","MARA","SLB","PARA","WBD",
-  "DIS","UBER","LYFT","SHOP","SQ","RBLX","CRWD","PATH","AI",
-  "SOFI","HOOD","AFRM","UPST","LC","BMBL","FUBO",
-  "XPEV","LI","CCJ","CDE","CX","EXEL","GOLD","GTE","HBM","HL",
-  "HMY","KGC","MOS","MUX","NEM","NG","NYMT","PAAS",
-  "SAN","SBS","SVM","TECK","TM","TEVA","WPM","X","ZIM","AG",
-  "AEM","CLF","DNN","EMR","FMC","GGB","GFI","HES","HUM",
-  "MRO","MT","NUE","OSK","SAND","SBSW","SIX","SLB","SMFG",
-  "STAG","TRGP","TSEM","TX","UMC","VALE","VICI","VST","WLK","WPM",
-  "ASTS","BTG","CEG","CHGG","CVNA","DK","DNUT","ENVX","EVGO","EXC",
-  "FTNT","GEHC","GFS","GM","GRAB","HIMS","INMD","INVH","IRDM",
-  "JMIA","KDP","MNST","MRNA","MSTR","NXST","ON","OTEX",
-  "PINS","PYPL","RIG","SBLK","SE","SEAS","SITC","SMCI","SOFI",
-  "STR","TAL","TCOM","TLRY","TTD","TWLO","UPST","VALE","VNT",
-  "WDC","WIRE","WPC","XCUR","ZETA",
+  "DIS","UBER","LYFT","SQ","RBLX","CRWD","AI",
+  "SOFI","HOOD","AFRM","UPST","LC","BMBL",
+  "XPEV","LI","CCJ","GOLD","HBM","HL","HMY","KGC","MOS","NEM",
+  "SAN","SVM","TECK","TEVA","WPM","X","ZIM","AG","AEM","CLF",
+  "EMR","GGB","GFI","HES","HUM","MRO","MT","NUE","SLB",
+  "STAG","TRGP","TX","UMC","VALE","VICI","VST","WLK",
+  "ASTS","BTG","CEG","CVNA","DK","ENVX","EVGO","EXC",
+  "FTNT","GRAB","HIMS","INMD","IRDM","JMIA","KDP","MNST","MRNA",
+  "ON","PINS","PYPL","RIG","SBLK","SE","SMCI","SOFI",
+  "TAL","TCOM","TLRY","TTD","TWLO","VNT","WDC","ZETA",
 ];
 
 interface TickerData {
@@ -74,7 +70,8 @@ export async function getBatchQuotes(tickers: string[]): Promise<Record<string, 
   if (tickers.length === 0) return {};
   const result: Record<string, QuoteData> = {};
 
-  const batchSize = 100;
+  // EODHD real-time bulk endpoint supports multiple symbols
+  const batchSize = 50;
   const batches: string[][] = [];
   for (let i = 0; i < tickers.length; i += batchSize) {
     batches.push(tickers.slice(i, i + batchSize));
@@ -82,39 +79,45 @@ export async function getBatchQuotes(tickers: string[]): Promise<Record<string, 
 
   for (const batch of batches) {
     try {
-      const symbols = batch.join(",");
-      const url = `${FMP_BASE}/quote/${symbols}?apikey=${FMP_API_KEY}`;
+      const symbols = batch.map(s => `${s}.US`).join(",");
+      const url = `${EODHD_BASE}/real-time/${batch[0]}.US?api_token=${EODHD_API_KEY}&fmt=json&s=${symbols}`;
       const res = await fetch(url, { next: { revalidate: 300 } });
       if (!res.ok) {
-        console.warn("FMP quote error:", res.status);
+        console.warn("EODHD quote error:", res.status, await res.text());
         continue;
       }
       const data = await res.json();
-      if (!Array.isArray(data)) continue;
+      const arr = Array.isArray(data) ? data : [data];
 
-      for (const q of data) {
-        if (!q || !q.symbol) continue;
-        result[q.symbol] = {
-          symbol: q.symbol,
-          regularMarketPrice: q.price ?? 0,
-          regularMarketChange: q.change ?? 0,
-          regularMarketChangePercent: q.changesPercentage ?? 0,
-          regularMarketVolume: q.volume ?? 0,
-          averageDailyVolume3Month: q.avgVolume ?? 1,
-          averageDailyVolume10Day: q.avgVolume ?? 1,
-          marketCap: q.marketCap ?? 0,
-          fiftyTwoWeekLow: q.yearLow ?? 0,
-          fiftyTwoWeekHigh: q.yearHigh ?? 0,
-          shortName: q.name ?? q.symbol,
-          longName: q.name ?? q.symbol,
-          fiftyDayAverage: q.priceAvg50 ?? 0,
-          twoHundredDayAverage: q.priceAvg200 ?? 0,
+      for (const q of arr) {
+        if (!q || !q.code) continue;
+        const sym = q.code.replace(".US", "");
+        const price = parseFloat(q.close) || parseFloat(q.previousClose) || 0;
+        const prevClose = parseFloat(q.previousClose) || price;
+        const change = price - prevClose;
+        const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
+
+        result[sym] = {
+          symbol: sym,
+          regularMarketPrice: price,
+          regularMarketChange: change,
+          regularMarketChangePercent: changePct,
+          regularMarketVolume: parseInt(q.volume) || 0,
+          averageDailyVolume3Month: parseInt(q.volume) || 1,
+          averageDailyVolume10Day: parseInt(q.volume) || 1,
+          marketCap: parseFloat(q.marketCapitalization) || 0,
+          fiftyTwoWeekLow: parseFloat(q["52WeekLow"]) || 0,
+          fiftyTwoWeekHigh: parseFloat(q["52WeekHigh"]) || 0,
+          shortName: sym,
+          longName: sym,
+          fiftyDayAverage: parseFloat(q.fifty_ma || q["50ma"]) || 0,
+          twoHundredDayAverage: parseFloat(q.two_hundred_ma || q["200ma"]) || 0,
         };
       }
     } catch (err) {
       console.warn("Batch quote error:", err);
     }
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 300));
   }
 
   return result;
@@ -126,24 +129,22 @@ export async function getStockHistory(
   limit = 60
 ): Promise<HistoryCandle[]> {
   try {
-    const url = `${FMP_BASE}/historical-price-full/${symbol}?timeseries=${limit}&apikey=${FMP_API_KEY}`;
+    const from = new Date(Date.now() - limit * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const url = `${EODHD_BASE}/eod/${symbol}.US?api_token=${EODHD_API_KEY}&fmt=json&from=${from}&period=d`;
     const res = await fetch(url, { next: { revalidate: 300 } });
     if (!res.ok) return [];
 
     const data = await res.json();
-    if (!data || !data.historical) return [];
+    if (!Array.isArray(data)) return [];
 
-    return data.historical
-      .slice(0, limit)
-      .reverse()
-      .map((c: { date: string; open: number; high: number; low: number; close: number; volume: number }) => ({
-        date: c.date,
-        open: c.open ?? 0,
-        high: c.high ?? 0,
-        low: c.low ?? 0,
-        close: c.close ?? 0,
-        volume: c.volume ?? 0,
-      }));
+    return data.map((c: { date: string; open: number; high: number; low: number; close: number; volume: number }) => ({
+      date: c.date,
+      open: c.open ?? 0,
+      high: c.high ?? 0,
+      low: c.low ?? 0,
+      close: c.close ?? 0,
+      volume: c.volume ?? 0,
+    }));
   } catch (err) {
     console.warn(`History error for ${symbol}:`, err);
     return [];
@@ -206,9 +207,7 @@ function calcEMA(data: number[], period: number): number {
   if (data.length < period) return data[data.length - 1] || 0;
   const k = 2 / (period + 1);
   let ema = data.slice(0, period).reduce((a, b) => a + b, 0) / period;
-  for (let i = period; i < data.length; i++) {
-    ema = data[i] * k + ema * (1 - k);
-  }
+  for (let i = period; i < data.length; i++) { ema = data[i] * k + ema * (1 - k); }
   return ema;
 }
 
